@@ -30,10 +30,11 @@ def actualizar_pagina(pagina, tarjetas):
 
 def buscar_info_para_tarjetas(url):
     with sync_playwright() as p:
-        browser = p.chromium.launch()
+        #browser = p.chromium.launch()
+        browser = p.chromium.connect("ws://0.0.0.0:3000/")
         page = browser.new_page()
         page.goto(url)
-        
+        print("yendo") 
         try:
             page.wait_for_selector('#contents', timeout=60000)
             videos = page.query_selector_all('#video-title-link')[:5]
@@ -43,7 +44,7 @@ def buscar_info_para_tarjetas(url):
                 id_video = video.get_attribute('href').split('=')[-1]
                 thumbnail = f"https://i.ytimg.com/vi_webp/{id_video}/maxresdefault.webp"
                 url_video = f"https://www.youtube.com/watch?v={id_video}"
-                # print(f"Titulo: {titulo_video}\nURL: {url_video}\nThumbnail: {thumbnail}\n")
+                print(f"Titulo: {titulo_video}\nURL: {url_video}\nThumbnail: {thumbnail}\n")
                 descargar_imagen(id_video ,thumbnail, dir_imagenes)
                 tarjetas += armar_tarjeta(titulo_video, url_video, id_video)
             return tarjetas
@@ -53,11 +54,13 @@ def buscar_info_para_tarjetas(url):
         browser.close()
 
 if __name__ == "__main__":
-    channel_url = "https://www.youtube.com/@esbendev/videos"
+    # channel_url = "https://www.youtube.com/@esbendev/videos"
+    channel_url = "https://www.youtube.com/@esbendev/videos?hl=es&persist_hl=1"
     path_principal = "../esbendev.github.io/"
     dir_imagenes = f"{path_principal}imagenes/thumbnails/"
     archivo_pagina_es = f"{path_principal}index.html"
     archivo_pagina_en = f"{path_principal}index-en.html"
+    print(".")
     tarjetas = buscar_info_para_tarjetas(channel_url)
     actualizar_pagina(archivo_pagina_en,tarjetas)
     actualizar_pagina(archivo_pagina_es,tarjetas)
